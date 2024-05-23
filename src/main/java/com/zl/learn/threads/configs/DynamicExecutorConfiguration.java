@@ -7,8 +7,13 @@ import com.zl.learn.threads.events.MetadataEvent;
 import com.zl.learn.threads.events.MetadataEvents;
 import com.zl.learn.threads.executor.ExecutorInstances;
 import com.zl.learn.threads.executor.ExecutorMetadata;
+import com.zl.learn.threads.monitor.ExecutorsMonitor;
 import com.zl.learn.threads.untils.ListUtils;
 import com.zl.learn.threads.untils.PropertiesUtil;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
@@ -26,10 +31,23 @@ public class DynamicExecutorConfiguration implements ApplicationEventPublisherAw
 
     ApplicationEventPublisher publisher;
 
+    @Value("${spring.application.name}")
+    private String applicationName;
+
 
     @Bean
     ExecutorInstances executorInstances(){
         return new ExecutorInstances();
+    }
+
+    @Bean
+    ExecutorsMonitor executorsMonitor(ExecutorInstances executorInstances, PrometheusMeterRegistry meterRegistry){
+        return new ExecutorsMonitor(executorInstances, meterRegistry, applicationName);
+    }
+
+    @Bean
+    public MeterRegistryCustomizer<MeterRegistry> meterRegistryCustomizer(){
+        return registry -> registry.config().commonTags("application", applicationName);
     }
 
     @NacosConfigListener(dataId = "dynamic-executor.yaml", groupId = "EXECUTOR")

@@ -75,10 +75,21 @@ public class ExecutorInstances implements ApplicationListener<MetadataEvents> {
         return new DynamicThreadPoolExecutor(businessName, corePoolSize, maximumPoolSize, keepAliveTime, timeUnit, new ReChangeBlockingQueue<>(blockingQueue), handler);
     }
 
+    /**
+     * get all executor metadata
+     * @return
+     */
     public List<ExecutorMetadata> getExecutorsMetadata(){
         return new ArrayList<>(metadata.values());
     }
 
+    /**
+     * get all executors
+     * @return
+     */
+    public List<DynamicThreadPoolExecutor> getAllExecutors(){
+        return new ArrayList<>(executorMap.values());
+    }
     @Override
     public void onApplicationEvent(MetadataEvents event) {
         List<MetadataEvent> source = (List<MetadataEvent>) event.getSource();
