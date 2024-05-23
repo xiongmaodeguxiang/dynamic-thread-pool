@@ -8,6 +8,7 @@ import com.zl.learn.threads.events.MetadataEvents;
 import com.zl.learn.threads.executor.ExecutorInstances;
 import com.zl.learn.threads.executor.ExecutorMetadata;
 import com.zl.learn.threads.monitor.ExecutorsMonitor;
+import com.zl.learn.threads.processors.ChangeDefinitionBeanFactorProcessor;
 import com.zl.learn.threads.untils.ListUtils;
 import com.zl.learn.threads.untils.PropertiesUtil;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
-//@EnableNacos(globalProperties = @NacosProperties(serverAddr = "${nacos.server}"))
 @EnableNacos(globalProperties = @NacosProperties())
 public class DynamicExecutorConfiguration implements ApplicationEventPublisherAware {
     public static final String DYNAMIC_EXECUTOR_PREFIX = "dynamic.executors";
@@ -34,7 +34,10 @@ public class DynamicExecutorConfiguration implements ApplicationEventPublisherAw
     @Value("${spring.application.name}")
     private String applicationName;
 
-
+    @Bean
+    ChangeDefinitionBeanFactorProcessor changeDefinitionBeanFactorProcessor(){
+        return new ChangeDefinitionBeanFactorProcessor();
+    }
     @Bean
     ExecutorInstances executorInstances(){
         return new ExecutorInstances();
@@ -50,7 +53,7 @@ public class DynamicExecutorConfiguration implements ApplicationEventPublisherAw
         return registry -> registry.config().commonTags("application", applicationName);
     }
 
-    @NacosConfigListener(dataId = "dynamic-executor.yaml", groupId = "EXECUTOR")
+    @NacosConfigListener(dataId = "${dynamic.executors.config.dataId}", groupId = "dynamic.executors.config.groupId")
     public void onReceive(String content){
         Yaml yaml = new Yaml();
         Map<String, Object> properties = yaml.load(content);
