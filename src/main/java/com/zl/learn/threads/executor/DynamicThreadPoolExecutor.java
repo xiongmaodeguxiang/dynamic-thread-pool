@@ -7,6 +7,7 @@ import java.util.concurrent.*;
 
 public class DynamicThreadPoolExecutor extends ThreadPoolExecutor {
     private ReChangeBlockingQueue reChangeBlockingQueue;
+    private String businessName;
     public DynamicThreadPoolExecutor(
                                     String businessName,
                                     int corePoolSize,
@@ -17,6 +18,7 @@ public class DynamicThreadPoolExecutor extends ThreadPoolExecutor {
                                      RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new DynamicThreadFactory(businessName), handler);
         this.reChangeBlockingQueue = workQueue;
+        this.businessName = businessName;
     }
 
     /**
@@ -38,5 +40,13 @@ public class DynamicThreadPoolExecutor extends ThreadPoolExecutor {
      */
     public void changeQueue(BlockingQueue<Runnable> queue){
         reChangeBlockingQueue.changeType(queue);
+    }
+
+    /**
+     * 获取线程池的名称
+     * @return
+     */
+    public String getBusinessName() {
+        return businessName;
     }
 }
