@@ -53,7 +53,7 @@ public class DynamicExecutorConfiguration implements ApplicationEventPublisherAw
         return registry -> registry.config().commonTags("application", applicationName);
     }
 
-    @NacosConfigListener(dataId = "${dynamic.executors.config.dataId}", groupId = "dynamic.executors.config.groupId")
+    @NacosConfigListener(dataId = "${spring.application.name}-executor.yaml", groupId = "EXECUTOR")
     public void onReceive(String content){
         Yaml yaml = new Yaml();
         Map<String, Object> properties = yaml.load(content);
