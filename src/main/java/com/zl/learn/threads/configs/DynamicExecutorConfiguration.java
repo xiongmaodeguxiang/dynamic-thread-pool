@@ -8,15 +8,19 @@ import com.zl.learn.threads.events.MetadataEvents;
 import com.zl.learn.threads.executor.ExecutorInstances;
 import com.zl.learn.threads.executor.ExecutorMetadata;
 import com.zl.learn.threads.monitor.ExecutorsMonitor;
+import com.zl.learn.threads.processors.ChangeBeanFactoryPostProcessor;
 import com.zl.learn.threads.processors.ChangeDefinitionRegistryPostProcessor;
 import com.zl.learn.threads.untils.ListUtils;
 import com.zl.learn.threads.untils.PropertiesUtil;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.yaml.snakeyaml.Yaml;
 
 import java.util.List;
@@ -33,23 +37,18 @@ public class DynamicExecutorConfiguration implements ApplicationEventPublisherAw
     private String applicationName;
 
     @Bean
-    ChangeDefinitionRegistryPostProcessor changeDefinitionBeanFactorProcessor(){
-        return new ChangeDefinitionRegistryPostProcessor();
-    }
-    @Bean
     ExecutorInstances executorInstances(){
         return new ExecutorInstances();
     }
-
     @Bean
     ExecutorsMonitor executorsMonitor(ExecutorInstances executorInstances, PrometheusMeterRegistry meterRegistry){
         return new ExecutorsMonitor(executorInstances, meterRegistry, applicationName);
     }
 
-//    @Bean
-//    public MeterRegistryCustomizer<MeterRegistry> meterRegistryCustomizer(){
-//        return registry -> registry.config().commonTags("application", applicationName);
-//    }
+    @Bean
+    public MeterRegistryCustomizer<MeterRegistry> meterRegistryCustomizer(){
+        return registry -> registry.config().commonTags("application", applicationName);
+    }
 
     @NacosConfigListener(dataId = "${spring.application.name}-executor.yaml", groupId = "EXECUTOR")
     public void onReceive(String content){
