@@ -8,8 +8,6 @@ import com.zl.learn.threads.events.MetadataEvents;
 import com.zl.learn.threads.executor.ExecutorInstances;
 import com.zl.learn.threads.executor.ExecutorMetadata;
 import com.zl.learn.threads.monitor.ExecutorsMonitor;
-import com.zl.learn.threads.processors.ChangeBeanFactoryPostProcessor;
-import com.zl.learn.threads.processors.ChangeDefinitionRegistryPostProcessor;
 import com.zl.learn.threads.untils.ListUtils;
 import com.zl.learn.threads.untils.PropertiesUtil;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -20,14 +18,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.yaml.snakeyaml.Yaml;
 
 import java.util.List;
 import java.util.Map;
 
 @Configuration
-@EnableNacos(globalProperties = @NacosProperties())
+@EnableNacos(globalProperties = @NacosProperties(enableRemoteSyncConfig = "true"))
 public class DynamicExecutorConfiguration implements ApplicationEventPublisherAware {
     public static final String DYNAMIC_EXECUTOR_PREFIX = "dynamic.executors";
 
