@@ -6,6 +6,6 @@ import org.springframework.core.type.AnnotationMetadata;
 public class DynamicExecutorImportSelector implements ImportSelector {
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-        return new String[]{DynamicExecutorConfiguration.class.getName(),BeanDefinitionRegistryConfiguration.class.getName()};
+        return new String[]{DynamicExecutorConfiguration.class.getName()};
     }
 }
