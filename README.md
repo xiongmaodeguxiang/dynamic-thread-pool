@@ -278,8 +278,8 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     consul_sd_configs:
       - server: '192.168.11.102:8500'
-        services: []  # 替换为你的微服务名称
-    relabel_configs:
+        services: []  # 替换为你的微服务名称为空表示发现所有服务
+    relabel_configs: # 进行consul发现的元数据label标签替换
       - source_labels: ['__meta_consul_service']
         target_label:  'application'
       - source_labels: ['__address__']
@@ -294,11 +294,11 @@ scrape_configs:
     #   - source_labels: ['metadata']
     #     regex: '.*'
     #     action: keep
-    honor_labels: true
-    params:
+    honor_labels: true  ##如果出现标签冲突时的处理策略，比如应用与服务器配置都配置某个标签value不同，此时为true时表示保留应用的标签
+    params:  # 请求metric数据时的请求参数，表示改配置表示查询所有不为空的label
       metric[]:
         - '{__name__=~".+"}'
-rule_files:
+rule_files: # 配置规则rule文件
   - "alert.rules"
 ```
 alert.rules文件的内容为：
@@ -306,16 +306,16 @@ alert.rules文件的内容为：
 groups:
 - name: threadpool_alerts
   rules:
-  # 计算每个executor_name的core_size_monitor与max_size_monitor的比值
+  # 计算每个executor_name的core_size_monitor与max_size_monitor的比值，没有配置其他label表示计算相同label中两个指标的比值
   - record: threadpool_usage_ratio:ratio
     expr: active_size_monitor / max_size_monitor
   # 报警规则，当比值为80%时触发
   - alert: ThreadPoolUsageHigh
     expr: threadpool_usage_ratio:ratio > 0.8
-    for: 20s
-    labels:
+    for: 20s  # 表示20s内如果比率大于0.8则满足规则
+    labels: # 表示对报警记录产生标签，标签为serverity=critical
       severity: critical
-    annotations:
+    annotations: # 表示报警的内容
       summary: "High thread pool usage"
       description: "The thread pool usage ratio for application {{ $labels.application }}, instance {{$labels.instance }}, and executor_name {{ $labels.executor_name }} is above 80%."
 ```
@@ -330,11 +330,11 @@ docker run -d \
 alertmanager.yml内容
 ```yaml
 route:
-  receiver: 'default-receiver'
-  group_by: ['severity']
-  group_wait: 5s
-  group_interval: 2s
-  repeat_interval: 10s
+  receiver: 'default-receiver' # 路由的接收者
+  group_by: ['severity'] # 表示按照serverity进行分组，相同的标签分到一组然后一起进行报警
+  group_wait: 5s # 表示下一次报警需要等待的时间，在这个过程中有新的报警加入，则汇总为一条发送
+  group_interval: 2s # 表示下次一报警前，检查是否有新消息加入的检查周期，如果有新的报警消息加入，则直接进行报警
+  repeat_interval: 10s # 在报警未解决之前10s内不再进行重复报警
 
 receivers:
 - name: 'default-receiver'
@@ -671,6 +671,6 @@ docker run -d \
   "weekStart": ""
 }
 ```
-当然直接拷贝不行，需要自己先创建一个空的dashboard然后需要将json中panels与templating中的内容替换到空的dashboard中
-至此线程池的grafana监控也搭建完毕
+当然直接拷贝不行，需要自己先创建一个空的dashboard然后需要将json中panels与templating中的内容替换到空的dashboard的panels与templating中
+至此基于nacos线程池的报警以及grafana监控搭建完毕
 
