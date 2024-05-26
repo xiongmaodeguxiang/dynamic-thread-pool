@@ -1,8 +1,8 @@
-##基于Nacos配置的动态线程池
+## 基于Nacos配置的动态线程池
 1.该项目包含了对核心线程，最大线程数，阻塞队列，拒绝策略等参数的修改
 2.项目继承了prometheus实现了线程池监控，可以配置线程池中活跃线程与最大线程比例达到阈值时进行报警以及自动恢复通知
 3.可以基于prometheus的数据搭建grafana来线程池进行监控
-##实现原理
+## 实现原理
 1.通过对nacos配置文件的监听来实现线程池参数的修改，自定义阻塞队列，支持阻塞队列的扩容与类型切换
 2.通过prometheus上报监控指标，监控指标为：
  - core_size_monitor{executor_name="aa",} 2.0 核心线程数监控，并且executor_name标签为线程池名字
@@ -12,7 +12,7 @@
  - queue_size_monitor{executor_name="aa",} 91.0 线程池队列中元素数量的指标监控
  同时使用prometheus以及alertmanager配置报警规则：对active_size_monitor/max_size_monitor指标进行监控从而来实现线程池的报警与自动恢复
  3.通过grafana拉去prometheus的数据可以生成线程池中各个指标的折线图
- ##接入流程
+ ## 接入流程
  项目中引入依赖：
  ```xml
     <dependency>
@@ -235,7 +235,7 @@ dynamic:
     }
 ```
 至此微服务的配置已完成
-##prometheus监控配置
+## prometheus监控配置
 由于我们使用prometheus收集了指标，因此我们现在需要使用prometheus来实现报警，首先需要搭建prometheus服务，我采用的是docker搭建的
 ```shell script
 docker run \
