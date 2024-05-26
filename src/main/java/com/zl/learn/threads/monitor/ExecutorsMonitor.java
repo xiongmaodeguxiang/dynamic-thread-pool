@@ -18,11 +18,9 @@ public class ExecutorsMonitor implements SmartLifecycle {
     private ExecutorInstances executorInstances;
     private PrometheusMeterRegistry meterRegistry;
     private ScheduledExecutorService executorService;
-    private String applicationName;
-    public ExecutorsMonitor(ExecutorInstances executorInstances, PrometheusMeterRegistry meterRegistry,String applicationName){
+    public ExecutorsMonitor(ExecutorInstances executorInstances, PrometheusMeterRegistry meterRegistry){
         this.executorInstances = executorInstances;
         this.meterRegistry = meterRegistry;
-        this.applicationName = applicationName;
         executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -36,7 +34,7 @@ public class ExecutorsMonitor implements SmartLifecycle {
 
     @Override
     public void start() {
-        executorService.scheduleAtFixedRate(new MonitorTask(meterRegistry,executorInstances, applicationName), 5, 2, TimeUnit.SECONDS);
+        executorService.scheduleAtFixedRate(new MonitorTask(meterRegistry,executorInstances), 5, 2, TimeUnit.SECONDS);
     }
 
     @Override

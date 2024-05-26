@@ -4,38 +4,23 @@ import com.alibaba.nacos.api.annotation.NacosProperties;
 import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
 import com.alibaba.nacos.spring.context.annotation.EnableNacos;
 import com.zl.learn.threads.events.ConfigChangeEvent;
-import com.zl.learn.threads.events.MetadataEvent;
-import com.zl.learn.threads.events.MetadataEvents;
 import com.zl.learn.threads.executor.ExecutorInstances;
-import com.zl.learn.threads.executor.ExecutorMetadata;
 import com.zl.learn.threads.listeners.ConfigChangeListener;
 import com.zl.learn.threads.listeners.NacosConfigMetadataEventListener;
 import com.zl.learn.threads.monitor.ExecutorsMonitor;
-import com.zl.learn.threads.untils.ListUtils;
-import com.zl.learn.threads.untils.PropertiesUtil;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.yaml.snakeyaml.Yaml;
-
-import java.util.List;
-import java.util.Map;
 
 @Configuration
-//@EnableNacos(globalProperties = @NacosProperties(enableRemoteSyncConfig = "true"))
 @EnableNacos(globalProperties = @NacosProperties())
 public class DynamicExecutorConfiguration implements ApplicationEventPublisherAware {
 
 
     ApplicationEventPublisher publisher;
-
-    @Value("${spring.application.name}")
-    private String applicationName;
 
     @Bean
     NacosConfigMetadataEventListener nacosConfigMetadataEventListener(){
@@ -53,13 +38,13 @@ public class DynamicExecutorConfiguration implements ApplicationEventPublisherAw
     }
     @Bean
     ExecutorsMonitor executorsMonitor(ExecutorInstances executorInstances, PrometheusMeterRegistry meterRegistry){
-        return new ExecutorsMonitor(executorInstances, meterRegistry, applicationName);
+        return new ExecutorsMonitor(executorInstances, meterRegistry);
     }
 
-    @Bean
-    public MeterRegistryCustomizer<MeterRegistry> meterRegistryCustomizer(){
-        return registry -> registry.config().commonTags("application", applicationName);
-    }
+//    @Bean
+//    public MeterRegistryCustomizer<MeterRegistry> meterRegistryCustomizer(){
+//        return registry -> registry.config().commonTags("application", applicationName);
+//    }
 
     @NacosConfigListener(dataId = "${spring.application.name}-executor.yaml", groupId = "EXECUTOR")
     public void onReceive(String content){

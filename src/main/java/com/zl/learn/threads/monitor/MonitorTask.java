@@ -14,19 +14,14 @@ public class MonitorTask implements Runnable {
     private PrometheusMeterRegistry meterRegistry;
     private CollectorRegistry prometheusRegistry;
     private ExecutorInstances executorInstances;
-    private String applicationName;
-    private Map<String, ExecutorGauge> gaugeMap = new HashMap<String, ExecutorGauge>();
+    private ExecutorGauge executorGauge;
 
-    public MonitorTask(PrometheusMeterRegistry meterRegistry, ExecutorInstances executorInstances,String applicationName) {
+    public MonitorTask(PrometheusMeterRegistry meterRegistry, ExecutorInstances executorInstances) {
         this.meterRegistry = meterRegistry;
         this.executorInstances = executorInstances;
         this.prometheusRegistry = meterRegistry.getPrometheusRegistry();
-        this.applicationName = applicationName;
         List<DynamicThreadPoolExecutor> allExecutors = executorInstances.getAllExecutors();
-        for(DynamicThreadPoolExecutor executor : allExecutors){
-            String businessName = executor.getBusinessName();
-            gaugeMap.put(businessName, new ExecutorGauge(businessName, prometheusRegistry, applicationName));
-        }
+        executorGauge = new ExecutorGauge(prometheusRegistry);
 
     }
 
@@ -34,8 +29,7 @@ public class MonitorTask implements Runnable {
     public void run() {
         List<DynamicThreadPoolExecutor> allExecutors = executorInstances.getAllExecutors();
         for(DynamicThreadPoolExecutor executor : allExecutors) {
-            ExecutorGauge gauge = gaugeMap.computeIfAbsent(executor.getBusinessName(), k -> new ExecutorGauge(executor.getBusinessName(), prometheusRegistry, applicationName));
-            gauge.gauge(executor);
+            executorGauge.gauge(executor);
         }
     }
 }
