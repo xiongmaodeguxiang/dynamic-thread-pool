@@ -1,11 +1,13 @@
 package com.zl.learn.threads.executor;
 
+import com.zl.learn.threads.decorators.TaskDecoratorManager;
 import com.zl.learn.threads.enums.BlockingQueueEnum;
 import com.zl.learn.threads.enums.HandlerTypeEnum;
 import com.zl.learn.threads.enums.TimeUnitEnum;
 import com.zl.learn.threads.events.*;
 import com.zl.learn.threads.exception.NoExecutorExecutor;
 import com.zl.learn.threads.queue.ReChangeBlockingQueue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -22,6 +24,11 @@ public class ExecutorInstances implements ApplicationListener<MetadataEvents> {
 
     private ConcurrentHashMap<String, DynamicThreadPoolExecutor> executorMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, ExecutorMetadata> metadata = new ConcurrentHashMap<>();
+
+    @Autowired
+    TaskDecoratorManager taskDecoratorManager;
+
+    @Autowired
 
     public ThreadPoolExecutor getExecutor(String name){
         DynamicThreadPoolExecutor executor = executorMap.computeIfAbsent(name, k ->createDynamicThreadPoolExecutor(k,metadata.get(k)));
@@ -72,7 +79,7 @@ public class ExecutorInstances implements ApplicationListener<MetadataEvents> {
         }else{
             handler = HandlerTypeEnum.getDefault();
         }
-        return new DynamicThreadPoolExecutor(businessName, corePoolSize, maximumPoolSize, keepAliveTime, timeUnit, new ReChangeBlockingQueue<>(blockingQueue), handler);
+        return new DynamicThreadPoolExecutor(businessName, corePoolSize, maximumPoolSize, keepAliveTime, timeUnit, new ReChangeBlockingQueue<>(blockingQueue), handler,taskDecoratorManager);
     }
 
     /**
