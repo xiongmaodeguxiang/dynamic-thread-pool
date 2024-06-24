@@ -28,7 +28,6 @@ public class ExecutorInstances implements ApplicationListener<MetadataEvents> {
     @Autowired
     TaskDecoratorManager taskDecoratorManager;
 
-    @Autowired
 
     public ThreadPoolExecutor getExecutor(String name){
         DynamicThreadPoolExecutor executor = executorMap.computeIfAbsent(name, k ->createDynamicThreadPoolExecutor(k,metadata.get(k)));
