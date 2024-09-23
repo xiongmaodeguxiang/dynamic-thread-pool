@@ -7,12 +7,14 @@ import com.zl.learn.threads.enums.TimeUnitEnum;
 import com.zl.learn.threads.events.*;
 import com.zl.learn.threads.exception.NoExecutorExecutor;
 import com.zl.learn.threads.queue.ReChangeBlockingQueue;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
@@ -20,7 +22,7 @@ import java.util.concurrent.*;
 /**
  * 用于获取线程池
  */
-public class ExecutorInstances implements ApplicationListener<MetadataEvents> {
+public class ExecutorInstances implements ApplicationListener<MetadataEvents>, DisposableBean {
 
     private ConcurrentHashMap<String, DynamicThreadPoolExecutor> executorMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, ExecutorMetadata> metadata = new ConcurrentHashMap<>();
@@ -157,5 +159,18 @@ public class ExecutorInstances implements ApplicationListener<MetadataEvents> {
     private void dealAddEvent(MetadataAddEvent metadataEvent) {
         metadata.put(metadataEvent.getMetadata().getName(), metadataEvent.getMetadata());
         executorMap.put(metadataEvent.getMetadata().getName(), createDynamicThreadPoolExecutor(metadataEvent.getMetadata().getName(), metadataEvent.getMetadata()));
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        Iterator<DynamicThreadPoolExecutor> it = executorMap.values().iterator();
+        while (it.hasNext()){
+            DynamicThreadPoolExecutor threadPoolExecutor = it.next();
+            try{
+                threadPoolExecutor.shutdown();
+            }catch (Exception e){
+
+            }
+        }
     }
 }
